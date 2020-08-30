@@ -35,6 +35,8 @@ let weathersData1=[]
     });
 
     res.send( weathersData1);
+    
+    
 })
 
 function  Weather (elementData) {
@@ -77,8 +79,9 @@ app.use('*',(req,res)=>{
     res.status(404).send('NOT FOUND');
 })
 
-app.use((error,req,res)=>{
-    res.status(500).send(error);
+app.use(function(req,res,next) {
+    res.status(500).send( "Sorry, something went wrong");
+    
 })
 
 
