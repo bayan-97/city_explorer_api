@@ -22,19 +22,22 @@ app.get('/trails', trailhelder)
 function weatherhelder(req, res) {
     // const weatherALL = require('./data/weather.json');
     const cityName = req.query.city;
+    const latitude = req.query.lat;
+    const longitude = req.query.lon;
     // const lonName = req.query.city;
     // const lagName = req.query.city;
 
 
     let key2 = process.env.WEATHER_API_KEY;
-    const url = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityName}&key=${key2}`
+    const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&key=${key2}&format=json`
 
     superagent.get(url)
         .then(data => {
 
+          let  weathersData2=data.body.data
 
             console.log(data.body.data);
-            let weathersData1 = data.body.data.map((element, idx) => {
+            let weathersData1 = weathersData2.map((element, idx) => {
 
                 return new Weather(element);
 
