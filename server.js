@@ -20,16 +20,16 @@ app.get('/trails', trailhelder)
 
 // localhost:3000/weather?city=lynwood
 function weatherhelder(req, res) {
-    // const weatherALL = require('./data/weather.json');
-    const cityName = req.query.city;
-    const latitude = req.query.lat;
-    const longitude = req.query.lon;
+    // const weatherALL = requir/e('./data/weather.json');
+    // const cityName = req.query.city;
+    let latitude = req.query.latitude;
+    let longitude = req.query.longitude;
     // const lonName = req.query.city;
     // const lagName = req.query.city;
 
 
     let key2 = process.env.WEATHER_API_KEY;
-    const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&key=${key2}&format=json`
+    const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&key=${key2}`
 
     superagent.get(url)
         .then(data => {
@@ -101,8 +101,8 @@ function Location(cityData, locationData) {
 
 function trailhelder(req, res) {
 
-    const latitude = req.query.lat;
-    const longitude = req.query.lon;
+    const latitude = req.query.latitude;
+    const longitude = req.query.longitude;
 
 
 
