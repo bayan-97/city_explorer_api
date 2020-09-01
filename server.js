@@ -4,10 +4,15 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const superagent = require('superagent');
+const pg = require('pg');
+
 
 const PORT = process.env.PORT || 1997;
 const app = express();
 app.use(cors());
+const client = new pg.Client(process.env.DATABASE_URL);
+
+
 
 
 app.get('/weather', weatherhelder)
@@ -36,7 +41,7 @@ function weatherhelder(req, res) {
 
           let  weathersData2=data.body.data
 
-            console.log(data.body.data);
+    
             let weathersData1 = weathersData2.map((element, idx) => {
 
                 return new Weather(element);
@@ -67,21 +72,78 @@ function Weather(elementData) {
 
 
 
+
+
+
+// function locationHandling(req, res) {
+//     const cityData = req.query.city;
+//     let locationAPIKey = process.env.GEOCODE_API_KEY;
+//     const url = `https://eu1.locationiq.com/v1/search.php?key=${locationAPIKey}&q=${cityData}&format=json`;
+  
+//     let selectAllSQL = `SELECT * FROM locations`;
+//     let selectSQL = `SELECT * FROM locations WHERE search_query=$1`;
+//     let safeValues = [];
+    // client.query(selectAllSQL).then((result) => {
+    //   if (result.rows.length <= 0) {
+    //     superAgent.get(url).then((data) => {
+    //       console.log(`from API`);
+    //       const locationData = new Location(data.body, cityData);
+    //       insertLocationInDB(locationData);
+    //       res.status(200).josn(locationData);
+    //     });
+    //   } else {
+    //     safeValues = [cityData];
+    //     client.query(selectSQL, safeValues).then((result) => {
+    //       if (result.rows.length <= 0) {
+    //         superAgent.get(url).then((data1) => {
+    //           console.log(`From API Again`);
+    //           const locationData = new Location(data1.body, cityData);
+    //           insertLocationInDB(locationData);
+    //           res.status(200).json(locationData);
+    //         });
+    //       } else {
+    //         console.log('form data base');
+    //         res.status(200).json(result.rows[0]);
+    //       }
+    //     });
+    //   }
+    // });
+//   }
 // localhost:1997/location?city=lynwood
 function locationhelder(req, res) {
     const cityName = req.query.city;
+    let selectAllSQL = `SELECT * FROM locations`;
+     let selectSQL = `SELECT * FROM locations WHERE search_query=$1`;
+      let safeValues = [];
     let key = process.env.LOCATION_KEY;
+
     const url = `https://eu1.locationiq.com/v1/search.php?key=${key}&q=${cityName}&format=json`
-
-    superagent.get(url)
-        .then(data => {
+    
+    client.query(selectAllSQL).then((result) => {
+        if (result.rows.length <= 0) {
+            superagent.get(url).then((data) => {
+            console.log(`from API`);
             let locationes1 = new Location(cityName, data.body);
-            res.send(locationes1);
-
-        })
-    // .catch(()=>{
-    //     errorHandler('something went wrong in etting the data from locationiq web',req,res)
-    // })
+            insertLocationInDB(locationes1 );
+            res.status(200).josn(locationes1 );
+          });
+        } else {
+          safeValues = [cityName];
+          client.query(selectSQL, safeValues).then((result) => {
+            if (result.rows.length <= 0) {
+                superagent.get(url).then((data1) => {
+                console.log(`From API Again`);
+                let locationes1 = new Location(cityName, data1.body);
+                insertLocationInDB(locationes1 );
+                res.status(200).json(locationes1 );
+              });
+            } else {
+              console.log('form data base');
+              res.status(200).json(result.rows[0]);
+            }
+          });
+        }
+      });
 
 
 }
@@ -95,7 +157,19 @@ function Location(cityData, locationData) {
 }
 
 
-
+function insertLocationInDB(obj) {
+    let insertSQL = `INSERT INTO locations (search_query,formatted_query,latitude,longitude) VALUES ($1,$2,$3,$4)`;
+    let safeValues = [
+      obj.search_query,
+      obj.formatted_query,
+      obj.latitude,
+      obj.longitude,
+    ];
+    client.query(insertSQL, safeValues).then(() => {
+      console.log('storing data in database');
+    });
+  }
+  
 
 
 
@@ -158,6 +232,11 @@ app.use(function (req, res, next) {
 
 
 
-app.listen(PORT, () => {
-    console.log(`Listening on PORT ${PORT}`);
-})
+
+client.connect()
+.then(()=>{
+    app.listen(PORT, () =>{
+    console.log(`listening on ${PORT}`)
+    })
+});
+
