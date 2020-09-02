@@ -192,9 +192,9 @@ app.use('*', (req, res) => {
     res.status(404).send('NOT FOUND');
 })
 
-app.use(function (req, res, next) {
-    res.status(500).send("Sorry, something went wrong");
-
+app.use(function( error,req,res) {
+    res.status(500).send( "Sorry, something went wrong");
+    
 })
 
 
