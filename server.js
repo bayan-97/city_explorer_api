@@ -18,6 +18,8 @@ const client = new pg.Client(process.env.DATABASE_URL);
 app.get('/weather', weatherhelder)
 app.get('/location', locationhelder)
 app.get('/trails', trailhelder)
+app.get('/movie', movieshandler)
+
 
 
 
@@ -31,7 +33,7 @@ function weatherhelder(req, res) {
     let longitude = req.query.longitude;
     // const lonName = req.query.city;
     // const lagName = req.query.city;
-
+console.log(req);
 
     let key2 = process.env.WEATHER_API_KEY;
     const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&key=${key2}`
@@ -51,10 +53,9 @@ function weatherhelder(req, res) {
 
             res.send(weathersData1);
 
-        });
-    // .catch(()=>{
-    //     errorHandler('something went wrong in etting the data from locationiq web',req,res)
-    // })   
+        }).catch(error => errorHandler(error,req,res))
+        
+
 
 }
 
@@ -103,15 +104,14 @@ function locationhelder(req, res) {
                 let locationes1 = new Location(cityName, data1.body);
                 insertLocationInDB(locationes1 );
                 res.status(200).json(locationes1 );
-              });
+              }).catch(error => errorHandler(error,req,res))
             } else {
               console.log('form data base');
               res.status(200).json(result.rows[0]);
             }
-          });
+          }).catch(error => errorHandler(error,req,res))
         }
-      });
-
+      }).catch(error => errorHandler(error,req,res))
 
 }
 
@@ -134,7 +134,7 @@ function insertLocationInDB(indataBase) {
     ];
     client.query(insertSQL, safeValues).then(() => {
       console.log('storing data in database');
-    });
+    }).catch(error => errorHandler(error,req,res))
   }
   
 
@@ -164,7 +164,7 @@ function trailhelder(req, res) {
 
             res.send(trailsData1);
 
-        });
+        }).catch(error => errorHandler(error,req,res))
     // .catch(()=>{
     //     errorHandler('something went wrong in etting the data from locationiq web',req,res)
     // })   
@@ -188,6 +188,56 @@ function Trails(trailsData) {
 }
 
 
+
+
+let movies_URL = `https://api.themoviedb.org/3/configuration/countries?api_key=${movieKEY}`
+var codesArray = [];
+
+async function getCodes() {
+    superagent.get(movies_URL)
+        .then(
+            data => {
+                codesArray = data.body;
+
+            })
+        .catch(error => errorHandler(error, req, res))
+
+}
+
+getCodes()
+function  movieshandler(req, res) {
+  let arrayObjects = [];
+  let queryArray = req.query.formatted_query.split(',');
+  let countryName = queryArray[queryArray.length - 1].trim();
+ 
+  let countryCode = codesArray.filter(element => {
+      return element.english_name === countryName
+  }).map(item => {
+      return item.iso_3166_1;
+  });
+  const movieURLEnd = `https://api.themoviedb.org/3/discover/movie?api_key=${movieKEY}&region=${countryCode}&sort_by=popularity.desc`
+  superagent.get(movieURLEnd)
+      .then(
+          data => {
+              data.body.results.map(element => {
+                  let movieData = new Movie(element);
+                  arrayObjects.push(movieData);
+              }
+              )
+              res.send(arrayObjects)
+          })
+      .catch(error => errorHandler(error, req, res))
+
+}
+function Movie(movieObi) { 
+  this.title = movieObi.title;
+  this.overview = movieObi.overview;
+  this.average_votes = movieObi.vote_average;
+  this.total_votes = movieObi.vote_count;
+  this.image_url = 'https://image.tmdb.org/t/p/w500/' + movieObi.poster_path;
+  this.popularity = movieObi.popularity;
+  this.released_on = movieObi.release_date;
+};
 app.use('*', (req, res) => {
     res.status(404).send('NOT FOUND');
 })
@@ -197,7 +247,9 @@ app.use(function (req, res, next) {
 
 })
 
-
+function errorHandler(error, request, response) {
+  response.status(500).send(error);
+}
 
 
 client.connect()
@@ -205,5 +257,4 @@ client.connect()
     app.listen(PORT, () =>{
     console.log(`listening on ${PORT}`)
     })
-});
-
+})
