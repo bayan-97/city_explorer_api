@@ -19,6 +19,8 @@ app.get('/weather', weatherhelder)
 app.get('/location', locationhelder)
 app.get('/trails', trailhelder)
 app.get('/movie', movieshandler)
+app.get('/yeld', yeldhandler)
+
 
 
 
@@ -238,6 +240,38 @@ function Movie(movieObi) {
   this.popularity = movieObi.popularity;
   this.released_on = movieObi.release_date;
 };
+
+function yeldhandler(req, res) {
+  let city=req.query.city
+  let key2 = process.env.YELD_API_KEY;
+  
+  
+const yeldURLEnd = `https://api.yelp.com/v3/businesses/search?city=${city}`
+superagent.get(yeldURLEnd)
+let arrayObjects=[]
+.set(`Authorization`,`Bearer ${process.env.YELD_API_KEY}`)
+      .then(
+          data => {
+              data.body.businesses.map(element => {
+                  let yeldData = new Yeld(element);
+                  arrayObjects.push(yeldData);
+              }
+              )
+              res.send(arrayObjects)
+          })
+      .catch(error => errorHandler(error, req, res))
+
+}
+function Yeld(yelds) {
+  
+  this.name=yelds.name
+  this.image_url=yelds.image_url
+  this.price=yelds.price
+  this.rating=yelds.rating
+  this.url=yelds.url
+  
+}
+
 app.use('*', (req, res) => {
     res.status(404).send('NOT FOUND');
 })
