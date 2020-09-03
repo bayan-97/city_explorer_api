@@ -55,7 +55,7 @@ console.log(req);
 
             res.send(weathersData1);
 
-        }).catch(error => errorHandler(error,req,res))
+        })
         
 
 
@@ -106,14 +106,14 @@ function locationhelder(req, res) {
                 let locationes1 = new Location(cityName, data1.body);
                 insertLocationInDB(locationes1 );
                 res.status(200).json(locationes1 );
-              }).catch(error => errorHandler(error,req,res))
+              })
             } else {
               console.log('form data base');
               res.status(200).json(result.rows[0]);
             }
-          }).catch(error => errorHandler(error,req,res))
+          })
         }
-      }).catch(error => errorHandler(error,req,res))
+      })
 
 }
 
@@ -136,7 +136,7 @@ function insertLocationInDB(indataBase) {
     ];
     client.query(insertSQL, safeValues).then(() => {
       console.log('storing data in database');
-    }).catch(error => errorHandler(error,req,res))
+    })
   }
   
 
@@ -166,7 +166,7 @@ function trailhelder(req, res) {
 
             res.send(trailsData1);
 
-        }).catch(error => errorHandler(error,req,res))
+        })
     // .catch(()=>{
     //     errorHandler('something went wrong in etting the data from locationiq web',req,res)
     // })   
