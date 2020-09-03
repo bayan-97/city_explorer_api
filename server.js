@@ -243,13 +243,12 @@ function Movie(movieObi) {
 };
 
 function yeldhandler(req, res) {
-  let city=req.query.city
+  let city=req.query.search_query
   let key2 = process.env.YELD_API_KEY;
   
-  
+  let arrayObjects=[]  
 const yeldURLEnd = `https://api.yelp.com/v3/businesses/search?city=${city}`
 superagent.get(yeldURLEnd)
-let arrayObjects=[]
 .set(`Authorization`,`Bearer ${process.env.YELD_API_KEY}`)
       .then(
           data => {
@@ -260,7 +259,7 @@ let arrayObjects=[]
               )
               res.send(arrayObjects)
           })
-      .catch(error => errorHandler(error, req, res))
+      // .catch(error => errorHandler(error, req, res))
 
 }
 function Yeld(yelds) {
