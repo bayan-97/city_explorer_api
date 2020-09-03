@@ -217,6 +217,7 @@ function  movieshandler(req, res) {
   }).map(item => {
       return item.iso_3166_1;
   });
+  let movieKEY = process.env.MOVIE_API_KEY;
   const movieURLEnd = `https://api.themoviedb.org/3/discover/movie?api_key=${movieKEY}&region=${countryCode}&sort_by=popularity.desc`
   superagent.get(movieURLEnd)
       .then(
