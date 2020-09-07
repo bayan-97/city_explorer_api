@@ -54,7 +54,8 @@ function weatherhelder(req, res) {
 
             res.send(weathersData1);
 
-        })
+        }).catch (error => errorHandler(error,req,res))
+  
         
 
 
@@ -112,7 +113,8 @@ function locationhelder(req, res) {
             }
           })
         }
-      })
+      }).catch (error => errorHandler(error,req,res))
+  
 
 }
 
@@ -165,7 +167,8 @@ function trailhelder(req, res) {
 
             res.send(trailsData1);
 
-        })
+        }).catch (error => errorHandler(error,req,res))
+  
    
 
 }
@@ -204,7 +207,7 @@ function  movieshandler(req, res) {
                 )
                 res.status(200).send( arrayObjects)
             })
-        
+            .catch (error => errorHandler(error,req,res))
   
   }
 
@@ -244,7 +247,7 @@ superagent.get(yeldURLEnd).set(`Authorization`,`Bearer ${key2}`)
               )
           
               res.send(arrayObjects)
-          })
+          }) .catch (error => errorHandler(error,req,res))
      
 }
 function  Yeld(yelds) {
@@ -261,17 +264,14 @@ app.use('*', (req, res) => {
     res.status(404).send('NOT FOUND');
 })
 
-
-
-app.use(function( error,req,res) {
-    res.status(500).send( "Sorry, something went wrong");
+// app.use(function( error,req,res) {
+//     res.status(500).send( "Sorry, something went wrong");
     
-})
+// })
 
-
-// function errorHandler(error, request, response) {
-//   response.status(500).send(error);
-// }
+function errorHandler(error, request, response) {
+  response.status(500).send(error);
+}
 
 
 client.connect()
